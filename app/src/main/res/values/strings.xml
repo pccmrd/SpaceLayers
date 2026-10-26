@@ -1,0 +1,53 @@
+<resources>
+    <string name="app_name">HexWell</string>
+
+    <!-- Auth Screen -->
+    <string name="auth_badge">GRAVIMETRIC HEX-VOXEL ENGINE</string>
+    <string name="auth_headline">Chart Living Gravity Wells in Hexagonal Voxels</string>
+    <string name="auth_subtitle">Every flat-bottom hex across Deep Space, Orbit, Atmosphere, Surface, and Core is synthesized in code from compact Gemini procedural seeds and remembered forever in Cloud Firestore.</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="sign_out">Sign out</string>
+    <string name="auth_feature_layers">5 Vertical Strata: Void to Core</string>
+    <string name="auth_feature_voxels">Micro-Hexagonal Prism Voxels</string>
+    <string name="auth_feature_seeds">Zero-Mesh Seed &amp; Code Persistence</string>
+
+    <!-- Layers -->
+    <string name="layer_space_title">Deep Space Grid</string>
+    <string name="layer_space_sub">Zero-G plane warped by planetary gravity funnels</string>
+    <string name="layer_orbital_title">Orbital Capture Well</string>
+    <string name="layer_orbital_sub">Equipotential orbital rings &amp; tether stations</string>
+    <string name="layer_atmosphere_title">Atmospheric Envelope</string>
+    <string name="layer_atmosphere_sub">Aerodynamic drag, cloud vortices &amp; entry plasma</string>
+    <string name="layer_surface_title">Planetary Surface</string>
+    <string name="layer_surface_sub">Multi-elevation peaks, basins &amp; hex-voxel biomes</string>
+    <string name="layer_subsurface_title">Subsurface &amp; Core</string>
+    <string name="layer_subsurface_sub">Deep crust caverns &amp; high-mass gravity dynamo</string>
+
+    <!-- HUD & Controls -->
+    <string name="hud_turn_fmt">TURN %1$d</string>
+    <string name="hud_energy_fmt">%1$d MJ</string>
+    <string name="hud_seeds_saved_fmt">%1$d SEEDS</string>
+    <string name="mode_single_layer">SINGLE LAYER</string>
+    <string name="mode_strata_stack">5-LAYER STACK</string>
+    <string name="btn_reset_camera">Center View</string>
+    <string name="btn_recharge">Solar Recharge (+300 MJ)</string>
+    <string name="btn_move_here">Fly to Hex (%1$d MJ)</string>
+    <string name="btn_ascend_layer">Ascend Layer</string>
+    <string name="btn_descend_layer">Descend Well</string>
+
+    <!-- AI Procedural Synthesis -->
+    <string name="section_ai_actions">GEMINI PROCEDURAL SYNTHESIS</string>
+    <string name="action_scan_hex">Scan / Evolve Hex</string>
+    <string name="action_spawn_world">Forge 5-Layer World</string>
+    <string name="action_colonize">Build Hex Outpost</string>
+    <string name="action_mine_core">Deploy Gravity Rig</string>
+    <string name="action_terraform">Terraform Strata</string>
+    <string name="prompt_placeholder">Describe any celestial object, biome, ship, or megastructure…</string>
+    <string name="btn_generate_prompt">Synthesize Seed</string>
+    <string name="ai_generating_status">Gemini is compiling hexagonal voxel formula &amp; seed…</string>
+    <string name="empty_hex_title">Uncharted Gravity Coordinate</string>
+    <string name="empty_hex_body">Baseline space-time lattice. Trigger a scan, perform an action, or enter a custom prompt to synthesize persistent hexagonal voxel code here.</string>
+    <string name="formula_label">STORED PROCEDURAL SEED &amp; CODE</string>
+    <string name="loupe_drag_hint">Drag horizontally to rotate 3D hex-voxel model</string>
+    <string name="dismiss">Dismiss</string>
+</resources>

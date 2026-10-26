@@ -1,0 +1,184 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Default-Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidHexColor(hex) {
+      return hex is string && hex.size() >= 7 && hex.size() <= 9 && hex.matches('^#[0-9a-fA-F]{6,8}$');
+    }
+
+    // Standalone Validation Blueprint: SectorState
+    function isValidSectorState(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 60 &&
+             data.galaxySeed is int &&
+             data.shipQ is int && data.shipQ >= -20 && data.shipQ <= 20 &&
+             data.shipR is int && data.shipR >= -20 && data.shipR <= 20 &&
+             data.shipLayer is int && data.shipLayer >= 0 && data.shipLayer <= 4 &&
+             data.energy is int && data.energy >= 0 && data.energy <= 10000 &&
+             data.turnNumber is int && data.turnNumber >= 1 && data.turnNumber <= 1000000 &&
+             data.lastEventLog is string && data.lastEventLog.size() <= 500 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // Standalone Validation Blueprint: HexCellSeed
+    function isValidHexCellSeed(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.userId == request.auth.uid &&
+             isValidId(data.sectorId) &&
+             data.q is int && data.q >= -30 && data.q <= 30 &&
+             data.r is int && data.r >= -30 && data.r <= 30 &&
+             data.layerIndex is int && data.layerIndex >= 0 && data.layerIndex <= 4 &&
+             data.seed is int &&
+             data.archetype is string && data.archetype.size() >= 1 && data.archetype.size() <= 40 &&
+             data.voxelSubRings is int && data.voxelSubRings >= 2 && data.voxelSubRings <= 6 &&
+             data.proceduralFormula is string && data.proceduralFormula.size() >= 1 && data.proceduralFormula.size() <= 1200 &&
+             data.gravityMass is number && data.gravityMass >= 0 && data.gravityMass <= 15 &&
+             data.atmosphereDensity is number && data.atmosphereDensity >= 0 && data.atmosphereDensity <= 2 &&
+             data.elevationOffset is number && data.elevationOffset >= -10 && data.elevationOffset <= 10 &&
+             isValidHexColor(data.primaryColorHex) &&
+             isValidHexColor(data.secondaryColorHex) &&
+             isValidHexColor(data.accentColorHex) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 80 &&
+             data.loreSummary is string && data.loreSummary.size() >= 1 && data.loreSummary.size() <= 600 &&
+             data.lastActionContext is string && data.lastActionContext.size() <= 400 &&
+             data.evolutionCount is int && data.evolutionCount >= 1 && data.evolutionCount <= 100000 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId} {
+
+      // Collection 1: Persistent Sector State
+      match /sectors/{sectorId} {
+        allow get: if isSignedIn() &&
+                      request.auth.uid == userId &&
+                      isValidId(sectorId);
+
+        allow list: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       existing().userId == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+                         request.auth.uid == userId &&
+                         isValidId(sectorId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'name', 'galaxySeed', 'shipQ', 'shipR',
+                           'shipLayer', 'energy', 'turnNumber', 'lastEventLog',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'name', 'galaxySeed', 'shipQ', 'shipR',
+                           'shipLayer', 'energy', 'turnNumber', 'lastEventLog',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidSectorState(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidSectorState(incoming()) &&
+                         request.auth.uid == userId &&
+                         isValidId(sectorId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().galaxySeed == existing().galaxySeed &&
+                         incoming().createdAt == existing().createdAt &&
+                         (
+                           // Action 1: Navigation, Layer Transition & Turn Progression
+                           incoming().diff(existing()).affectedKeys().hasOnly([
+                             'shipQ', 'shipR', 'shipLayer', 'energy',
+                             'turnNumber', 'lastEventLog', 'updatedAt'
+                           ]) ||
+                           // Action 2: Rename Sector
+                           incoming().diff(existing()).affectedKeys().hasOnly([
+                             'name', 'updatedAt'
+                           ])
+                         );
+
+        allow delete: if isSignedIn() &&
+                         request.auth.uid == userId &&
+                         isValidId(sectorId);
+      }
+
+      // Collection 2: Procedural Hex Cell Seeds & Formulas
+      match /hex_cells/{cellId} {
+        allow get: if isSignedIn() &&
+                      request.auth.uid == userId &&
+                      isValidId(cellId);
+
+        allow list: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       existing().userId == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+                         request.auth.uid == userId &&
+                         isValidId(cellId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'sectorId', 'q', 'r', 'layerIndex', 'seed',
+                           'archetype', 'voxelSubRings', 'proceduralFormula',
+                           'gravityMass', 'atmosphereDensity', 'elevationOffset',
+                           'primaryColorHex', 'secondaryColorHex', 'accentColorHex',
+                           'title', 'loreSummary', 'lastActionContext',
+                           'evolutionCount', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'sectorId', 'q', 'r', 'layerIndex', 'seed',
+                           'archetype', 'voxelSubRings', 'proceduralFormula',
+                           'gravityMass', 'atmosphereDensity', 'elevationOffset',
+                           'primaryColorHex', 'secondaryColorHex', 'accentColorHex',
+                           'title', 'loreSummary', 'lastActionContext',
+                           'evolutionCount', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidHexCellSeed(incoming()) &&
+                         (
+                           exists(/databases/$(database)/documents/users/$(userId)/sectors/$(incoming().sectorId)) ||
+                           existsAfter(/databases/$(database)/documents/users/$(userId)/sectors/$(incoming().sectorId))
+                         );
+
+        allow update: if isSignedIn() &&
+                         isValidHexCellSeed(incoming()) &&
+                         request.auth.uid == userId &&
+                         isValidId(cellId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().sectorId == existing().sectorId &&
+                         incoming().q == existing().q &&
+                         incoming().r == existing().r &&
+                         incoming().layerIndex == existing().layerIndex &&
+                         incoming().createdAt == existing().createdAt &&
+                         // Action: Evolve Hex Procedural Formula & Telemetry on Game Circumstance Change
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'seed', 'archetype', 'voxelSubRings', 'proceduralFormula',
+                           'gravityMass', 'atmosphereDensity', 'elevationOffset',
+                           'primaryColorHex', 'secondaryColorHex', 'accentColorHex',
+                           'title', 'loreSummary', 'lastActionContext',
+                           'evolutionCount', 'updatedAt'
+                         ]);
+
+        allow delete: if isSignedIn() &&
+                         request.auth.uid == userId &&
+                         isValidId(cellId);
+      }
+    }
+  }
+}

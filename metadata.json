@@ -1,0 +1,6 @@
+{
+  "name": "HexWell",
+  "description": "Multi-layer isometric hexagonal voxel space map with gravity wells, procedural seed synthesis, and persistent Gemini world memory.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

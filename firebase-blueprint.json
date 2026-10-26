@@ -1,0 +1,196 @@
+{
+  "entities": {
+    "SectorState": {
+      "title": "SectorState",
+      "description": "Persistent space sector state for an authenticated commander, tracking flagship coordinates, layer, energy, turn counter, and galaxy seed.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner UID matching request.auth.uid."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the sector (1-60 chars)."
+        },
+        "galaxySeed": {
+          "type": "integer",
+          "description": "Deterministic baseline PRNG seed for the sector."
+        },
+        "shipQ": {
+          "type": "integer",
+          "description": "Current flagship axial Q coordinate (-20 to 20)."
+        },
+        "shipR": {
+          "type": "integer",
+          "description": "Current flagship axial R coordinate (-20 to 20)."
+        },
+        "shipLayer": {
+          "type": "integer",
+          "description": "Current vertical layer index (0=Subsurface Core to 4=Deep Space)."
+        },
+        "energy": {
+          "type": "integer",
+          "description": "Current flagship warp/thruster energy reserves (0-10000)."
+        },
+        "turnNumber": {
+          "type": "integer",
+          "description": "Monotonic game state turn counter (>= 1)."
+        },
+        "lastEventLog": {
+          "type": "string",
+          "description": "Latest commander action or sector event summary (0-500 chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp populated via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp populated via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "galaxySeed",
+        "shipQ",
+        "shipR",
+        "shipLayer",
+        "energy",
+        "turnNumber",
+        "lastEventLog",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "HexCellSeed": {
+      "title": "HexCellSeed",
+      "description": "Compact deterministic procedural voxel seed and DSL formula for a single hexagonal cell at (q, r, layerIndex), remembered forever and updated as game state evolves.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner UID matching request.auth.uid."
+        },
+        "sectorId": {
+          "type": "string",
+          "description": "Parent SectorState document ID."
+        },
+        "q": {
+          "type": "integer",
+          "description": "Hexagonal axial Q coordinate (-30 to 30)."
+        },
+        "r": {
+          "type": "integer",
+          "description": "Hexagonal axial R coordinate (-30 to 30)."
+        },
+        "layerIndex": {
+          "type": "integer",
+          "description": "Vertical layer (0=Subsurface Core, 1=Surface Terrain, 2=Atmosphere, 3=Orbital Gravity Well, 4=Deep Space)."
+        },
+        "seed": {
+          "type": "integer",
+          "description": "Deterministic PRNG seed for hexagonal voxel synthesis."
+        },
+        "archetype": {
+          "type": "string",
+          "description": "Procedural generator archetype identifier (1-40 chars)."
+        },
+        "voxelSubRings": {
+          "type": "integer",
+          "description": "Micro-hexagonal voxel resolution rings (2 to 6)."
+        },
+        "proceduralFormula": {
+          "type": "string",
+          "description": "Compact deterministic procedural DSL expression compiled in Kotlin to 3D hexagonal prism voxels (1-1200 chars)."
+        },
+        "gravityMass": {
+          "type": "number",
+          "description": "Gravitational mass pull inducing curvature in surrounding hexes (0.0 to 15.0)."
+        },
+        "atmosphereDensity": {
+          "type": "number",
+          "description": "Atmospheric envelope density (0.0 to 2.0)."
+        },
+        "elevationOffset": {
+          "type": "number",
+          "description": "Base height or depth offset for surface/subsurface strata (-10.0 to 10.0)."
+        },
+        "primaryColorHex": {
+          "type": "string",
+          "description": "Primary hex color (#RRGGBB)."
+        },
+        "secondaryColorHex": {
+          "type": "string",
+          "description": "Secondary hex color (#RRGGBB)."
+        },
+        "accentColorHex": {
+          "type": "string",
+          "description": "Emissive accent hex color (#RRGGBB)."
+        },
+        "title": {
+          "type": "string",
+          "description": "Generated name of the hex feature or object (1-80 chars)."
+        },
+        "loreSummary": {
+          "type": "string",
+          "description": "Concise description of how this hex looks and behaves in game state (1-600 chars)."
+        },
+        "lastActionContext": {
+          "type": "string",
+          "description": "Player action or prompt that generated or last evolved this hex (0-400 chars)."
+        },
+        "evolutionCount": {
+          "type": "integer",
+          "description": "Number of times this hex seed/code has been generated or updated (>= 1)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp populated via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp populated via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "sectorId",
+        "q",
+        "r",
+        "layerIndex",
+        "seed",
+        "archetype",
+        "voxelSubRings",
+        "proceduralFormula",
+        "gravityMass",
+        "atmosphereDensity",
+        "elevationOffset",
+        "primaryColorHex",
+        "secondaryColorHex",
+        "accentColorHex",
+        "title",
+        "loreSummary",
+        "lastActionContext",
+        "evolutionCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/sectors/{sectorId}": {
+      "schema": "SectorState",
+      "description": "Stores per-user persistent sector state and flagship telemetry."
+    },
+    "/users/{userId}/hex_cells/{cellId}": {
+      "schema": "HexCellSeed",
+      "description": "Stores per-user procedural hex seeds and voxel formulas across all vertical space/atmosphere/surface layers."
+    }
+  }
+}
